@@ -1,0 +1,318 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using AmortisationSimulator.Core.Input;
+using AmortisationSimulator.Core.Output;
+using LinqToExcel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace AmortisationSimulator.Core.Tests
+{
+    [TestClass]
+    public class SimulatorReferenceTests
+    {
+        [TestMethod]
+        public void BasicTest()
+        {
+            var input = new SimVariables();
+            var sim = new Simulator();
+            var result = sim.Simulate(input);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public void SimulateReferenceFiles()
+        {
+            var testRun = new TestRun();
+            var sim = new Simulator();
+            //for each xlsx file in Reference
+            foreach (var referenceFile in Directory.GetFiles("Reference"))
+            {
+                //read file
+                var data = new ReferenceData(referenceFile);
+                testRun.TestCases.Add(data);
+                data.Actual = sim.Simulate(data.Input);
+            }
+
+            TestUtils.ValidateTestRun(testRun);
+        }
+    }
+
+    public static class TestUtils
+    {
+        public static void ValidateTestRun(TestRun testRun)
+        {
+            var sb = new StringBuilder();
+            foreach (var referenceData in testRun.TestCases)
+            {
+                sb.AppendHeader($"{referenceData.CaseName}");
+                referenceData.CompareExpectedAndActual(sb);
+                sb.AppendFooter($"{(referenceData.ActualMatchesExpected ? "passed" : "FAILED")}");
+                //write full input/output to file(s)
+                SaveToFile(testRun.DirectoryName, referenceData);
+            }
+
+            //comparison summary to test result
+            Console.WriteLine(sb);
+
+            Assert.IsTrue(testRun.TestCases.TrueForAll(tc => tc.ActualMatchesExpected));
+        }
+
+        private static void SaveToFile(string directoryName, ReferenceData referenceData)
+        {
+            //todo: implement
+        }
+    }
+
+    public class TestRun
+    {
+        public DateTime Started { get; }
+        public List<ReferenceData> TestCases { get; }
+        public string DirectoryName => $"TestRun_{Started.ToString("s").Replace(":", "-")}";
+
+        public TestRun()
+        {
+            Started = DateTime.Now;
+            TestCases = new List<ReferenceData>();
+        }
+    }
+
+    public class ReferenceData
+    {
+        public string CaseName { get; set; }
+        public SimVariables Input { get; set; }
+        public SimResult Expected { get; set; }
+        public SimResult Actual { get; set; }
+        public bool ActualMatchesExpected { get; private set; }
+
+        public ReferenceData(string pathToFile)
+        {
+            CaseName = Path.GetFileNameWithoutExtension(pathToFile);
+            InitFromFile(pathToFile);
+        }
+
+        private void InitFromFile(string pathToFile)
+        {
+            var excel = new ExcelQueryFactory(pathToFile);
+            var input = excel.Worksheet("Input").ToArray();
+        }
+
+        //todo: make extendable and less copy-paste. find proper place
+
+        #region comparison methods
+
+        public void CompareExpectedAndActual(StringBuilder logger)
+        {
+            if (Expected == null)
+            {
+                logger.AppendIndented("Expected is null");
+                ActualMatchesExpected = false;
+                return;
+            }
+
+            if (Actual == null)
+            {
+                logger.AppendIndented("Actual is null");
+                ActualMatchesExpected = false;
+                return;
+            }
+
+            ActualMatchesExpected = Expected.Result == Actual.Result;
+            if (!ActualMatchesExpected)
+            {
+                logger.AppendIndented($"Simulation result mismatch: expected: {Expected.Result}, actual: {Actual.Result}");
+                return;
+            }
+
+            ActualMatchesExpected = CompareSummaryTables(Expected.AmortisationSummary, Actual.AmortisationSummary, logger);
+            if (!ActualMatchesExpected)
+            {
+                return;
+            }
+
+            ActualMatchesExpected = CompareTables(Expected.AmortisationTables, Actual.AmortisationTables, logger);
+        }
+
+        private static bool CompareTables(AmortisationTable[] expected, AmortisationTable[] actual, StringBuilder logger)
+        {
+            if (expected == null)
+            {
+                logger.AppendIndented("Expected.AmortisationTable[] is null");
+                return false;
+            }
+
+            if (actual == null)
+            {
+                logger.AppendIndented("Actual.AmortisationTable[] is null");
+                return false;
+            }
+
+            if (expected.Length != actual.Length)
+            {
+                logger.AppendIndented($"AmortisationTable[].Length mismatch: expected: {expected.Length}, actual: {actual.Length}");
+                return false;
+            }
+
+            foreach (var expectedTable in expected)
+            {
+                var actualTable = actual.FirstOrDefault(a => a.Creditor.Id.Equals(expectedTable.Creditor.Id));
+                if (actualTable == null)
+                {
+                    logger.AppendIndented(
+                        $"[{expectedTable.Creditor.CreditorName}]: Creditor {expectedTable.Creditor.Id} not found in Actual.AmortisationTable[]");
+                    return false;
+                }
+
+                if (!CompareTable(expectedTable, actualTable, logger))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CompareTable(AmortisationTable expected, AmortisationTable actual, StringBuilder logger)
+        {
+            var creditorName = expected.Creditor.CreditorName;
+            if (expected.Lines.Length != actual.Lines.Length)
+            {
+                logger.AppendIndented(
+                    $"[{creditorName}]: AmortisationTable.Lines.Length mismatch: expected: {expected.Lines.Length}, actual: {actual.Lines.Length}");
+                return false;
+            }
+
+            foreach (var expectedLine in expected.Lines)
+            {
+                var actualLine = actual.Lines.FirstOrDefault(l => l.Period == expectedLine.Period);
+                if (actualLine == null)
+                {
+                    logger.AppendIndented($"[{creditorName}]: Period {expectedLine.Period} not found in Actual.AmortisationTable.Lines");
+                    return false;
+                }
+
+                if (!CompareAmortisationLine(expectedLine, actualLine, logger))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CompareAmortisationLine(AmortisationTableLine expected, AmortisationTableLine actual, StringBuilder logger)
+        {
+            if (expected.AccruedInterest != actual.AccruedInterest)
+            {
+                logger.AppendIndented(
+                    $"Period {expected.Period}: AccruedInterest mismatch: expected {expected.AccruedInterest}, actual: {actual.AccruedInterest}");
+                return false;
+            }
+
+            if (expected.Installment != actual.Installment)
+            {
+                logger.AppendIndented($"Period {expected.Period}: Installment mismatch: expected {expected.Installment}, actual: {actual.Installment}");
+                return false;
+            }
+
+            if (expected.OutstandingBalance != actual.OutstandingBalance)
+            {
+                logger.AppendIndented(
+                    $"Period {expected.Period}: OutstandingBalance mismatch: expected {expected.OutstandingBalance}, actual: {actual.OutstandingBalance}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool CompareSummaryTables(AmortisationSummary expected, AmortisationSummary actual, StringBuilder logger)
+        {
+            if (expected == null)
+            {
+                logger.AppendIndented("Expected.AmortisationSummary is null");
+                return false;
+            }
+
+            if (actual == null)
+            {
+                logger.AppendIndented("Actual.AmortisationSummary is null");
+                return false;
+            }
+
+            if (expected.Lines.Length != actual.Lines.Length)
+            {
+                logger.AppendIndented($"AmortisationSummary.Lines.Length mismatch: expected: {expected.Lines.Length}, actual: {actual.Lines.Length}");
+                return false;
+            }
+
+            foreach (var expectedLine in expected.Lines)
+            {
+                var actualLine = actual.Lines.FirstOrDefault(l => l.Period == expectedLine.Period);
+                if (actualLine == null)
+                {
+                    logger.AppendIndented($"Period {expectedLine.Period} not found in Actual.AmortisationSummary");
+                    return false;
+                }
+
+                if (!CompareAmortisationSummaryLine(expectedLine, actualLine, logger))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool CompareAmortisationSummaryLine(AmortisationSummaryLine expected, AmortisationSummaryLine actual, StringBuilder logger)
+        {
+            if (expected.ContributionAmount != actual.ContributionAmount)
+            {
+                logger.AppendIndented(
+                    $"Period {expected.Period}: ContributionAmount mismatch: expected {expected.ContributionAmount}, actual: {actual.ContributionAmount}");
+                return false;
+            }
+
+            if (expected.DistributableToCreditors != actual.DistributableToCreditors)
+            {
+                logger.AppendIndented(
+                    $"Period {expected.Period}: DistributableToCreditors mismatch: expected {expected.DistributableToCreditors}, actual: {actual.DistributableToCreditors}");
+                return false;
+            }
+
+            if (expected.DcFee != actual.DcFee)
+            {
+                logger.AppendIndented($"Period {expected.Period}: DcFee mismatch: expected {expected.DcFee}, actual: {actual.DcFee}");
+                return false;
+            }
+
+            if (expected.TotalCreditorPayments != actual.TotalCreditorPayments)
+            {
+                logger.AppendIndented(
+                    $"Period {expected.Period}: TotalCreditorPayments mismatch: expected {expected.TotalCreditorPayments}, actual: {actual.TotalCreditorPayments}");
+                return false;
+            }
+
+            if (expected.UnallocatedAmount != actual.UnallocatedAmount)
+            {
+                logger.AppendIndented(
+                    $"Period {expected.Period}: UnallocatedAmount mismatch: expected {expected.UnallocatedAmount}, actual: {actual.UnallocatedAmount}");
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+    }
+
+    public static class Extensions
+    {
+        public static void AppendIndented(this StringBuilder sb, string message) => sb.AppendLine($"\t{message}");
+
+        public static void AppendHeader(this StringBuilder sb, string message) => sb.AppendLine($"=========={message.ToUpper()}==========");
+
+        public static void AppendFooter(this StringBuilder sb, string message) => sb.AppendLine($"----------{message}----------");
+    }
+}
