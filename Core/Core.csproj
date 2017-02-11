@@ -58,9 +58,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engine\Engine.cs" />
     <Compile Include="Input\SimVariables.cs" />
     <Compile Include="Output\AmortisationTable.cs" />
-    <Compile Include="Simulator.cs" />
+    <Compile Include="Engine\Simulator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

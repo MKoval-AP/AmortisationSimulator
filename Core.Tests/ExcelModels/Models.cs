@@ -25,7 +25,13 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
 
         public SimVariables ToSimVariables()
         {
-            return new SimVariables { ContributionAmount = ContributionAmount, DcFeePercentage1 = DcFeePercentage1, DcFeePercentage2 = DcFeePercentage2 };
+            return new SimVariables
+            {
+                Strategy = (Strategy) Enum.Parse(typeof (Strategy), Strategy),
+                ContributionAmount = ContributionAmount,
+                DcFeePercentage1 = DcFeePercentage1,
+                DcFeePercentage2 = DcFeePercentage2
+            };
         }
     }
 

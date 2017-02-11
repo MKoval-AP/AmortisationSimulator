@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using AmortisationSimulator.Core.Engine;
 using AmortisationSimulator.Core.Input;
 using AmortisationSimulator.Core.Output;
 using AmortisationSimulator.Core.Tests.ExcelModels;
@@ -104,6 +105,8 @@ namespace AmortisationSimulator.Core.Tests
             ReadFromFile();
         }
 
+        #region Read from Excel
+
         private void ReadFromFile()
         {
             _sheetNames = _excel.GetWorksheetNames().ToList();
@@ -133,9 +136,8 @@ namespace AmortisationSimulator.Core.Tests
                 ExcelAmortisationTables[creditor] = FromWorksheet<AmortisationLine>($"{amortPrefix}-{creditor.CreditorName}").ToArray();
             }
 
-            Expected = new SimResult
+            Expected = new SimResult(Input.Strategy, SimResultType.SolutionFound)
             {
-                Result = SimResultType.SolutionFound,
                 AmortisationSummary = new AmortisationSummary { Lines = ExcelAmortisationSummary.Select(el => el.ToSimLine()).ToArray() },
                 AmortisationTables =
                     ExcelAmortisationTables.Select(
@@ -150,6 +152,8 @@ namespace AmortisationSimulator.Core.Tests
             AssertSheetExists(sheetName);
             return _excel.Worksheet<T>(sheetName);
         }
+
+        #endregion
 
         //todo: make extendable and less copy-paste. find proper place
 
@@ -174,6 +178,7 @@ namespace AmortisationSimulator.Core.Tests
             ActualMatchesExpected = Expected.Result == Actual.Result;
             if (!ActualMatchesExpected)
             {
+                logger.AppendIndented(Actual.Message);
                 logger.AppendIndented($"Simulation result mismatch: expected: {Expected.Result}, actual: {Actual.Result}");
                 return;
             }
@@ -258,21 +263,20 @@ namespace AmortisationSimulator.Core.Tests
         {
             if (expected.AccruedInterest != actual.AccruedInterest)
             {
-                logger.AppendIndented(
-                    $"Period {expected.Period}: AccruedInterest mismatch: expected {expected.AccruedInterest}, actual: {actual.AccruedInterest}");
+                logger.AppendIndented($"AL[{expected.Period}]: AccruedInterest mismatch: expected {expected.AccruedInterest}, actual: {actual.AccruedInterest}");
                 return false;
             }
 
             if (expected.Installment != actual.Installment)
             {
-                logger.AppendIndented($"Period {expected.Period}: Installment mismatch: expected {expected.Installment}, actual: {actual.Installment}");
+                logger.AppendIndented($"AL[{expected.Period}]: Installment mismatch: expected {expected.Installment}, actual: {actual.Installment}");
                 return false;
             }
 
             if (expected.OutstandingBalance != actual.OutstandingBalance)
             {
                 logger.AppendIndented(
-                    $"Period {expected.Period}: OutstandingBalance mismatch: expected {expected.OutstandingBalance}, actual: {actual.OutstandingBalance}");
+                    $"AL[{expected.Period}] OutstandingBalance mismatch: expected {expected.OutstandingBalance}, actual: {actual.OutstandingBalance}");
                 return false;
             }
 
@@ -322,34 +326,34 @@ namespace AmortisationSimulator.Core.Tests
             if (expected.ContributionAmount != actual.ContributionAmount)
             {
                 logger.AppendIndented(
-                    $"Period {expected.Period}: ContributionAmount mismatch: expected {expected.ContributionAmount}, actual: {actual.ContributionAmount}");
+                    $"ASL[{expected.Period}]: ContributionAmount mismatch: expected {expected.ContributionAmount}, actual: {actual.ContributionAmount}");
                 return false;
             }
 
             if (expected.DistributableToCreditors != actual.DistributableToCreditors)
             {
                 logger.AppendIndented(
-                    $"Period {expected.Period}: DistributableToCreditors mismatch: expected {expected.DistributableToCreditors}, actual: {actual.DistributableToCreditors}");
+                    $"ASL[{expected.Period}]: DistributableToCreditors mismatch: expected {expected.DistributableToCreditors}, actual: {actual.DistributableToCreditors}");
                 return false;
             }
 
             if (expected.DcFee != actual.DcFee)
             {
-                logger.AppendIndented($"Period {expected.Period}: DcFee mismatch: expected {expected.DcFee}, actual: {actual.DcFee}");
+                logger.AppendIndented($"AL[{expected.Period}]: DcFee mismatch: expected {expected.DcFee}, actual: {actual.DcFee}");
                 return false;
             }
 
             if (expected.TotalCreditorPayments != actual.TotalCreditorPayments)
             {
                 logger.AppendIndented(
-                    $"Period {expected.Period}: TotalCreditorPayments mismatch: expected {expected.TotalCreditorPayments}, actual: {actual.TotalCreditorPayments}");
+                    $"ASL[{expected.Period}]: TotalCreditorPayments mismatch: expected {expected.TotalCreditorPayments}, actual: {actual.TotalCreditorPayments}");
                 return false;
             }
 
             if (expected.UnallocatedAmount != actual.UnallocatedAmount)
             {
                 logger.AppendIndented(
-                    $"Period {expected.Period}: UnallocatedAmount mismatch: expected {expected.UnallocatedAmount}, actual: {actual.UnallocatedAmount}");
+                    $"ASL[{expected.Period}]: UnallocatedAmount mismatch: expected {expected.UnallocatedAmount}, actual: {actual.UnallocatedAmount}");
                 return false;
             }
 
