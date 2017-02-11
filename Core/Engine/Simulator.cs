@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using AmortisationSimulator.Core.Input;
 using AmortisationSimulator.Core.Output;
@@ -117,12 +118,16 @@ namespace AmortisationSimulator.Core.Engine
 
         private SimResult CreateSolution(SimResultType solutionType, string message = null)
         {
-            return new SimResult(_variables.Strategy, solutionType)
+            var result = new SimResult(_variables.Strategy, solutionType)
             {
                 Message = message,
                 AmortisationSummary = _amortisationSummary.ToOutput(),
                 AmortisationTables = _amortisationTables.ToOutput()
             };
+
+            Debug.WriteLine(result);
+
+            return result;
         }
     }
 

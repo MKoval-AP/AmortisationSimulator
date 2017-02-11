@@ -1,0 +1,6 @@
+Period,Date,CreditorName,CreditorType,InterestRate,Installment,AccruedInterest,OriginalInstallment,OutstandingBalance,COB Date,ServiceFees,LinkedInsurance,CustomInstallment,ProRataPercentage,DistributableToCreditors,ProRataPercentageForSurplus,CreditorSurplus
+,,Vehicle,VF,7%,,,4000,5000,0,0,0,0,0.285714286,,,
+1,,,,,1357.14,0,,3642.86,,,,,0.285714286,4750,,
+2,,,,,1357.14,21.25,,2306.97,,,,,0.285714286,4750,,
+3,,,,,1360.79,13.46,,959.64,,,,,0.285714286,4750,0.333333333,10.95
+4,,,,,965.24,5.6,,0,,,,,0.333333333,4750,,

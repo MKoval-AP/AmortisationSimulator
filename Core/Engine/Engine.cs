@@ -83,13 +83,20 @@ namespace AmortisationSimulator.Core.Engine
 
         private decimal PreviousBalance(int period)
         {
-            return Lines.ContainsKey(period - 1) ? Lines[period - 1].OutstandingBalance : Creditor.OutstandingBalance;
+            return Lines.ContainsKey(period - 1) ? Lines[period - 1].ClosingBalance : Creditor.OutstandingBalance;
         }
 
         private decimal CalculateInterest(int period)
         {
+            //todo: fix to "COB Date" - "period date" interest calculation
+            if (period == 1)
+            {
+                return 0;
+            }
+
             //1/12th of yearly interest
-            return Math.Round(PreviousBalance(period) * Creditor.InterestRatePercentage / 12, 2, MidpointRounding.ToEven);
+            var interest = PreviousBalance(period) * Creditor.InterestRatePercentage / 12.0m;
+            return Math.Round(interest, 2, MidpointRounding.ToEven);
         }
 
         public override string ToString()
@@ -122,20 +129,18 @@ namespace AmortisationSimulator.Core.Engine
     internal class AmortisationTableLine
     {
         public int Period { get; }
-        public decimal Installment => AllocatedInstallment;
-        public decimal AccruedInterest { get; private set; }
-        public decimal OutstandingBalance => ClosingBalance;
+        public decimal OpeningBalance { get; }
+        public decimal AccruedInterest { get; }
 
         public decimal AllocatedInstallment { get; private set; }
-        public decimal OpeningBalance { get; }
-        public decimal InterestAccrued { get; set; }
+
         public decimal ClosingBalance => OpeningBalance + AccruedInterest - AllocatedInstallment;
 
-        public AmortisationTableLine(int period, decimal openingBalance, decimal interestAccrued)
+        public AmortisationTableLine(int period, decimal openingBalance, decimal accruedInterest)
         {
             Period = period;
             OpeningBalance = openingBalance;
-            InterestAccrued = interestAccrued;
+            AccruedInterest = accruedInterest;
             AllocatedInstallment = 0;
         }
 
@@ -159,9 +164,9 @@ namespace AmortisationSimulator.Core.Engine
             return new Output.AmortisationTableLine
             {
                 Period = Period,
-                Installment = Installment,
+                Installment = AllocatedInstallment,
                 AccruedInterest = AccruedInterest,
-                OutstandingBalance = OutstandingBalance
+                OutstandingBalance = ClosingBalance
             };
         }
 

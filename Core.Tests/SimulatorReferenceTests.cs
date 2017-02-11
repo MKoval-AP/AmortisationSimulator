@@ -133,7 +133,7 @@ namespace AmortisationSimulator.Core.Tests
             ExcelAmortisationTables = new Dictionary<Creditor, AmortisationLine[]>(ExcelCreditors.Length);
             foreach (var creditor in ExcelCreditors)
             {
-                ExcelAmortisationTables[creditor] = FromWorksheet<AmortisationLine>($"{amortPrefix}-{creditor.CreditorName}").ToArray();
+                ExcelAmortisationTables[creditor] = FromWorksheet<AmortisationLine>($"{amortPrefix}-{creditor.CreditorName}").Where(l => l.Period > 0).ToArray();
             }
 
             Expected = new SimResult(Input.Strategy, SimResultType.SolutionFound)
@@ -183,13 +183,13 @@ namespace AmortisationSimulator.Core.Tests
                 return;
             }
 
-            ActualMatchesExpected = CompareSummaryTables(Expected.AmortisationSummary, Actual.AmortisationSummary, logger);
+            ActualMatchesExpected = CompareTables(Expected.AmortisationTables, Actual.AmortisationTables, logger);
             if (!ActualMatchesExpected)
             {
                 return;
             }
 
-            ActualMatchesExpected = CompareTables(Expected.AmortisationTables, Actual.AmortisationTables, logger);
+            ActualMatchesExpected = CompareSummaryTables(Expected.AmortisationSummary, Actual.AmortisationSummary, logger);
         }
 
         private static bool CompareTables(AmortisationTable[] expected, AmortisationTable[] actual, StringBuilder logger)

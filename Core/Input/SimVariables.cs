@@ -22,7 +22,7 @@ namespace AmortisationSimulator.Core.Input
         public override string ToString()
         {
             return
-                $"[{Strategy}]: CA: {ContributionAmount}, DcFee-1: {DcFeePercentage1}, DcFee-2: {DcFeePercentage2}{Environment.NewLine}{string.Join($"{Environment.NewLine}", Creditors.Select(c => c.ToString()))}";
+                $"[{Strategy}]: CA: {ContributionAmount}, DcFee-1: {DcFeePercentage1}, DcFee-2: {DcFeePercentage2}{Environment.NewLine}{string.Join(Environment.NewLine, Creditors.Select(c => c.ToString()))}";
         }
     }
 
@@ -51,7 +51,7 @@ namespace AmortisationSimulator.Core.Input
 
         public override string ToString()
         {
-            return $"{CreditorName}: IntRate: {InterestRatePercentage}, Inst: {OriginalInstallment}, OB: {OutstandingBalance} {Id}";
+            return $"{CreditorName}: IntRate: {InterestRatePercentage}, Inst: {OriginalInstallment}, OB: {OutstandingBalance}";
         }
     }
 }

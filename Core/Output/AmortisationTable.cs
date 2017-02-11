@@ -1,4 +1,7 @@
-﻿using AmortisationSimulator.Core.Input;
+﻿using System;
+using System.Linq;
+using System.Text;
+using AmortisationSimulator.Core.Input;
 
 namespace AmortisationSimulator.Core.Output
 {
@@ -19,7 +22,7 @@ namespace AmortisationSimulator.Core.Output
         public override string ToString()
         {
             return
-                $"[{Strategy}]: {Result} ({Message}), AmortisationSummary: {AmortisationSummary.Lines.Length} periods, AmortisationTables: {AmortisationTables.Length}";
+                $"[{Strategy}]: {Result} ({Message}){Environment.NewLine} {AmortisationSummary}{string.Join(Environment.NewLine, AmortisationTables.Select(at => at.ToString()))}";
         }
     }
 
@@ -36,6 +39,16 @@ namespace AmortisationSimulator.Core.Output
     public class AmortisationSummary
     {
         public AmortisationSummaryLine[] Lines { get; set; }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            foreach (var l in Lines)
+            {
+                sb.AppendLine(l.ToString());
+            }
+            return sb.ToString();
+        }
     }
 
     public class AmortisationSummaryLine
@@ -61,7 +74,12 @@ namespace AmortisationSimulator.Core.Output
 
         public override string ToString()
         {
-            return $"C: {Creditor}, Lines.Count: {Lines.Length}";
+            var sb = new StringBuilder($"C: {Creditor}").AppendLine();
+            foreach (var l in Lines)
+            {
+                sb.AppendLine(l.ToString());
+            }
+            return sb.ToString();
         }
     }
 
