@@ -86,13 +86,15 @@ namespace AmortisationSimulator.Core.Engine
         {
             var creditorsWithBalance = _amortisationTables.CreditorsWithBalance;
             if (!creditorsWithBalance.Any())
+            {
                 return remainder;
-            var creditorBalances =
-                creditorsWithBalance.Select(c => new { Creditor = c, Balance = _amortisationTables[c].CurrentBalance }).ToArray();
+            }
+            var creditorBalances = creditorsWithBalance.Select(c => new { Creditor = c, Balance = _amortisationTables[c].CurrentBalance }).ToArray();
             var minBalance = creditorBalances.Min(cb => cb.Balance);
             var creditor = creditorBalances.First(cb => cb.Balance == minBalance).Creditor;
 
             return _amortisationTables[creditor].LastPeriod().AllocateInstallment(remainder);
+            //todo: keep allocating
         }
 
         private decimal AllocateSurplusProRata(decimal remainder)
