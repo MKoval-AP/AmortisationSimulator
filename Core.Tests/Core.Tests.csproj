@@ -101,11 +101,6 @@
     <Compile Include="Models\SpecRun.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Specs\Simple-ProRata.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="UnitTests\" />
   </ItemGroup>
   <ItemGroup>
@@ -116,9 +111,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <Content Include="Specs\Simple-Snowball.xlsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

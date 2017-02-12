@@ -14,14 +14,20 @@ namespace AmortisationSimulator.Core.Tests
             var specRun = new SpecRun();
             var sim = new Simulator();
 
-            foreach (var referenceFile in Directory.GetFiles("Specs"))
+            foreach (var spec in Directory.GetFiles(@"..\..\Specs", "*.xlsx"))
             {
-                var data = new SpecContextData(referenceFile);
+                //skip Excel temp files
+                if (Path.GetFileNameWithoutExtension(spec).StartsWith("~"))
+                {
+                    continue;
+                }
+
+                var data = new SpecContextData(spec);
                 data.Actual = sim.Simulate(data.Input);
                 specRun.Specs.Add(data);
             }
 
-            specRun.ValidateAndSaveResult();
+            specRun.ValidateAndSaveResults();
         }
     }
 }

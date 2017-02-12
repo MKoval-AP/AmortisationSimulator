@@ -20,7 +20,7 @@ namespace AmortisationSimulator.Core.Tests.Models
             Specs = new List<SpecContextData>();
         }
 
-        public void ValidateAndSaveResult()
+        public void ValidateAndSaveResults()
         {
             var directory = $"SpecRun_{Started.ToString("s").Replace(":", "-")}";
             var sb = new StringBuilder();
