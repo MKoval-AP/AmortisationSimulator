@@ -31,10 +31,11 @@ namespace AmortisationSimulator.Core.Tests.Models
                 spec.ActualMatchesSpec = SimResultComparer.Compare(spec.Spec, spec.Actual);
                 Console.Unindent();
                 Console.WriteFooter($"{(spec.ActualMatchesSpec ? "passed" : "FAILED")}");
+                Console.WriteLine();
 
                 if (spec.ActualMatchesSpec)
                 {
-                    Debug.WriteLine(spec.Actual);
+                    //Debug.WriteLine(spec.Actual);
                 }
                 else
                 {

@@ -61,7 +61,7 @@ namespace AmortisationSimulator.Core.Engine
             //todo: based on dates. especially if the first DC Fee payment was made before the first period date (migrated consumer, for example)
             CurrentLine.DcFee = CurrentContributionAmount * CurrentDcFeePercentage;
             CurrentLine.PdaFee = CurrentContributionAmount * Variables.PdaFeePercentage;
-            //CurrentLine.UnallocatedAmount = 
+            //CurrentLine.UnallocatedAmount =
             AllocateCreditors(CurrentLine.DistributableToCreditors);
             CurrentLine.TotalCreditorPayments = _amortisationTables.TotalCreditorPayments(CurrentPeriod);
         }
@@ -74,6 +74,29 @@ namespace AmortisationSimulator.Core.Engine
             var remainder = AllocateProRata(distributableToCreditors, notPaidOutCreditors);
 
             //allocate surplus if any & still possible
+            if (remainder > 0)
+            {
+                remainder = Variables.Strategy == Strategy.ProRata ? AllocateSurplusProRata(remainder) : AllocateSurplusSnowball(remainder);
+            }
+
+            return remainder;
+        }
+
+        private decimal AllocateSurplusSnowball(decimal remainder)
+        {
+            var creditorsWithBalance = _amortisationTables.CreditorsWithBalance;
+            if (!creditorsWithBalance.Any())
+                return remainder;
+            var creditorBalances =
+                creditorsWithBalance.Select(c => new { Creditor = c, Balance = _amortisationTables[c].CurrentBalance }).ToArray();
+            var minBalance = creditorBalances.Min(cb => cb.Balance);
+            var creditor = creditorBalances.First(cb => cb.Balance == minBalance).Creditor;
+
+            return _amortisationTables[creditor].LastPeriod().AllocateInstallment(remainder);
+        }
+
+        private decimal AllocateSurplusProRata(decimal remainder)
+        {
             var epoch = 0;
             while (remainder > 0 && !_amortisationTables.AllCreditorsPaidOut)
             {
@@ -86,7 +109,6 @@ namespace AmortisationSimulator.Core.Engine
                 remainder = AllocateProRata(remainder, stillNotPaidOut);
                 epoch++;
             }
-
             return remainder;
         }
 

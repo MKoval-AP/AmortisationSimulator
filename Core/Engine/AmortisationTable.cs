@@ -17,6 +17,8 @@ namespace AmortisationSimulator.Core.Engine
 
         public bool IsPaidOut => Creditor.OutstandingBalance == 0 || (Lines.Count > 0 && Lines.Last().Value.ClosingBalance == 0);
 
+        public AmortisationLine LastPeriod() => (Lines.Count > 0 ? Lines.Last().Value : null);
+
         public AmortisationLine GetPeriod(int period)
         {
             return Lines.ContainsKey(period) ? Lines[period] : null;
@@ -33,6 +35,8 @@ namespace AmortisationSimulator.Core.Engine
             var currentPeriod = Lines[period];
             return currentPeriod.AllocateInstallment(installment);
         }
+
+        public decimal CurrentBalance => (Lines.Count > 0 ? Lines.Last().Value.ClosingBalance : Creditor.OutstandingBalance);
 
         private decimal PreviousBalance(int period)
         {

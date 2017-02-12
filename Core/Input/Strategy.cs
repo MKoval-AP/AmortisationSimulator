@@ -2,6 +2,7 @@ namespace AmortisationSimulator.Core.Input
 {
     public enum Strategy
     {
-        ProRata
+        ProRata,
+        Snowball
     }
 }
