@@ -1,5 +1,3 @@
-using AmortisationSimulator.Core.Output;
-
 namespace AmortisationSimulator.Core.Engine
 {
     internal class AmortisationLine
@@ -7,6 +5,10 @@ namespace AmortisationSimulator.Core.Engine
         public string CreditorName { get; }
         public int Period { get; }
         public decimal OpeningBalance { get; }
+
+        /// <summary>
+        ///     Interest accrued from the previous period date (or COB date, if this is first period) to this period date
+        /// </summary>
         public decimal AccruedInterest { get; }
 
         public decimal AllocatedInstallment { get; private set; }

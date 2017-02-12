@@ -23,7 +23,7 @@ namespace AmortisationSimulator.Core.Input
 
         public override string ToString()
         {
-            return $"({CreditorName}) {InterestRatePercentage.ToString("p")}, Outstanding: {OutstandingBalance}, OrigInst: {OriginalInstallment}";
+            return $"({CreditorName}) {InterestRatePercentage.ToString("p")}\tOutstanding: {OutstandingBalance}\tOrigInst: {OriginalInstallment}";
         }
     }
 }

@@ -11,18 +11,17 @@ namespace AmortisationSimulator.Core.Tests
         [TestMethod]
         public void RunAllSpecs()
         {
-            var testRun = new TestRun();
+            var specRun = new SpecRun();
             var sim = new Simulator();
-            //for each xlsx file in Reference
+
             foreach (var referenceFile in Directory.GetFiles("Specs"))
             {
-                //read file
-                var data = new ReferenceData(referenceFile);
-                testRun.TestCases.Add(data);
+                var data = new SpecContextData(referenceFile);
                 data.Actual = sim.Simulate(data.Input);
+                specRun.Specs.Add(data);
             }
 
-            TestUtils.ValidateTestRun(testRun);
+            specRun.ValidateAndSaveResult();
         }
     }
 }
