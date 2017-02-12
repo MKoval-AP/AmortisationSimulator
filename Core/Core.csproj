@@ -58,10 +58,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Engine\AmortisationSummary.cs" />
+    <Compile Include="Engine\AmortisationTable.cs" />
+    <Compile Include="Engine\AmortisationLine.cs" />
+    <Compile Include="Engine\AmortisationTables.cs" />
+    <Compile Include="Engine\AmortisationSummaryLine.cs" />
+    <Compile Include="Engine\SimulationException.cs" />
+    <Compile Include="Input\Deduction.cs" />
     <Compile Include="Input\SimVariables.cs" />
+    <Compile Include="Input\Strategy.cs" />
+    <Compile Include="Output\AmortisationSummary.cs" />
+    <Compile Include="Output\AmortisationSummaryLine.cs" />
     <Compile Include="Output\AmortisationTable.cs" />
     <Compile Include="Engine\Simulator.cs" />
+    <Compile Include="Output\AmortisationLine.cs" />
+    <Compile Include="Output\SimResult.cs" />
+    <Compile Include="Output\SolutionType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

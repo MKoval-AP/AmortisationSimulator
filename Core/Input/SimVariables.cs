@@ -25,33 +25,4 @@ namespace AmortisationSimulator.Core.Input
                 $"[{Strategy}]: CA: {ContributionAmount}, DcFee-1: {DcFeePercentage1}, DcFee-2: {DcFeePercentage2}{Environment.NewLine}{string.Join(Environment.NewLine, Creditors.Select(c => c.ToString()))}";
         }
     }
-
-    public enum Strategy
-    {
-        ProRata
-    }
-
-    public class Deduction
-    {
-        public readonly Guid Id;
-        public string CreditorName { get; set; }
-        public decimal InterestRatePercentage { get; set; }
-        public decimal OriginalInstallment { get; set; }
-        public decimal OutstandingBalance { get; set; }
-        //todo: creditor type
-        //todo: service fees
-        //todo: linked insurance
-        //todo: custom installment
-        //todo: COB date
-
-        public Deduction()
-        {
-            Id = Guid.NewGuid();
-        }
-
-        public override string ToString()
-        {
-            return $"{CreditorName}: IntRate: {InterestRatePercentage}, Inst: {OriginalInstallment}, OB: {OutstandingBalance}";
-        }
-    }
 }

@@ -1,88 +1,18 @@
-﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using AmortisationSimulator.Core.Engine;
 using AmortisationSimulator.Core.Input;
 using AmortisationSimulator.Core.Output;
 using AmortisationSimulator.Core.Tests.ExcelModels;
 using LinqToExcel;
 using LinqToExcel.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using AmortisationLine = AmortisationSimulator.Core.Output.AmortisationLine;
 using AmortisationSummaryLine = AmortisationSimulator.Core.Tests.ExcelModels.AmortisationSummaryLine;
 
-namespace AmortisationSimulator.Core.Tests
+namespace AmortisationSimulator.Core.Tests.Models
 {
-    [TestClass]
-    public class SimulatorReferenceTests
-    {
-        [TestMethod]
-        public void BasicTest()
-        {
-            var input = new SimVariables();
-            var sim = new Simulator();
-            var result = sim.Simulate(input);
-            Assert.IsNotNull(result);
-        }
-
-        [TestMethod]
-        public void SimulateReferenceFiles()
-        {
-            var testRun = new TestRun();
-            var sim = new Simulator();
-            //for each xlsx file in Reference
-            foreach (var referenceFile in Directory.GetFiles("Reference"))
-            {
-                //read file
-                var data = new ReferenceData(referenceFile);
-                testRun.TestCases.Add(data);
-                data.Actual = sim.Simulate(data.Input);
-            }
-
-            TestUtils.ValidateTestRun(testRun);
-        }
-    }
-
-    public static class TestUtils
-    {
-        public static void ValidateTestRun(TestRun testRun)
-        {
-            var sb = new StringBuilder();
-            foreach (var referenceData in testRun.TestCases)
-            {
-                sb.AppendHeader($"{referenceData.CaseName}");
-                referenceData.CompareExpectedAndActual(sb);
-                sb.AppendFooter($"{(referenceData.ActualMatchesExpected ? "passed" : "FAILED")}");
-                //write full input/output to file(s)
-                SaveToFile(testRun.DirectoryName, referenceData);
-            }
-
-            //comparison summary to test result
-            Console.WriteLine(sb);
-
-            Assert.IsTrue(testRun.TestCases.TrueForAll(tc => tc.ActualMatchesExpected));
-        }
-
-        private static void SaveToFile(string directoryName, ReferenceData referenceData)
-        {
-            //todo: implement
-        }
-    }
-
-    public class TestRun
-    {
-        public DateTime Started { get; }
-        public List<ReferenceData> TestCases { get; }
-        public string DirectoryName => $"TestRun_{Started.ToString("s").Replace(":", "-")}";
-
-        public TestRun()
-        {
-            Started = DateTime.Now;
-            TestCases = new List<ReferenceData>();
-        }
-    }
-
     public class ReferenceData
     {
         private readonly ExcelQueryFactory _excel;
@@ -96,7 +26,7 @@ namespace AmortisationSimulator.Core.Tests
         public ExcelModels.Input ExcelInputData { get; private set; }
         public Creditor[] ExcelCreditors { get; private set; }
         public AmortisationSummaryLine[] ExcelAmortisationSummary { get; private set; }
-        public Dictionary<Creditor, AmortisationLine[]> ExcelAmortisationTables { get; private set; }
+        public Dictionary<Creditor, ExcelModels.AmortisationLine[]> ExcelAmortisationTables { get; private set; }
 
         public ReferenceData(string pathToFile)
         {
@@ -130,13 +60,13 @@ namespace AmortisationSimulator.Core.Tests
             //amortisation summary
             ExcelAmortisationSummary = FromWorksheet<AmortisationSummaryLine>($"{amortPrefix}-Summary").Where(sl => sl.TotalCreditorPayments > 0).ToArray();
 
-            ExcelAmortisationTables = new Dictionary<Creditor, AmortisationLine[]>(ExcelCreditors.Length);
+            ExcelAmortisationTables = new Dictionary<Creditor, ExcelModels.AmortisationLine[]>(ExcelCreditors.Length);
             foreach (var creditor in ExcelCreditors)
             {
-                ExcelAmortisationTables[creditor] = FromWorksheet<AmortisationLine>($"{amortPrefix}-{creditor.CreditorName}").Where(l => l.Period > 0).ToArray();
+                ExcelAmortisationTables[creditor] = FromWorksheet<ExcelModels.AmortisationLine>($"{amortPrefix}-{creditor.CreditorName}").Where(l => l.Period > 0).ToArray();
             }
 
-            Expected = new SimResult(Input.Strategy, SimResultType.SolutionFound)
+            Expected = new SimResult(Input.Strategy, SolutionType.SolutionFound)
             {
                 AmortisationSummary = new AmortisationSummary { Lines = ExcelAmortisationSummary.Select(el => el.ToSimLine()).ToArray() },
                 AmortisationTables =
@@ -259,7 +189,7 @@ namespace AmortisationSimulator.Core.Tests
             return true;
         }
 
-        private static bool CompareAmortisationLine(AmortisationTableLine expected, AmortisationTableLine actual, StringBuilder logger)
+        private static bool CompareAmortisationLine(AmortisationLine expected, AmortisationLine actual, StringBuilder logger)
         {
             if (expected.AccruedInterest != actual.AccruedInterest)
             {
@@ -361,14 +291,5 @@ namespace AmortisationSimulator.Core.Tests
         }
 
         #endregion
-    }
-
-    public static class Extensions
-    {
-        public static void AppendIndented(this StringBuilder sb, string message) => sb.AppendLine($"\t{message}");
-
-        public static void AppendHeader(this StringBuilder sb, string message) => sb.AppendLine($"=========={message.ToUpper()}==========");
-
-        public static void AppendFooter(this StringBuilder sb, string message) => sb.AppendLine($"----------{message}----------");
     }
 }

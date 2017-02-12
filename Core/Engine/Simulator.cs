@@ -34,9 +34,9 @@ namespace AmortisationSimulator.Core.Engine
                 CurrentPeriod = 1;
                 while (!_amortisationTables.AllCreditorsPaidOut)
                 {
-                    if (CurrentPeriod == MaxPeriods)
+                    if (CurrentPeriod > MaxPeriods)
                     {
-                        throw new SimulationException(SimResultType.SolutionNotFound);
+                        throw new SimulationException(SolutionType.ExceededMaxPeriods);
                     }
 
                     AllocateCurrentPeriod();
@@ -44,7 +44,7 @@ namespace AmortisationSimulator.Core.Engine
                     CurrentPeriod++;
                 }
 
-                return CreateSolution(SimResultType.SolutionFound);
+                return CreateSolution(SolutionType.SolutionFound);
             }
             catch (SimulationException simEx)
             {
@@ -52,7 +52,7 @@ namespace AmortisationSimulator.Core.Engine
             }
             catch (Exception ex)
             {
-                return CreateSolution(SimResultType.SimulationException, ex.Message);
+                return CreateSolution(SolutionType.SimulationException, ex.Message);
             }
         }
 
@@ -77,7 +77,7 @@ namespace AmortisationSimulator.Core.Engine
             {
                 if (epoch == 5)
                 {
-                    throw new SimulationException(SimResultType.StuckRemainderAllocation);
+                    throw new SimulationException(SolutionType.StuckInRemainderAllocation);
                 }
 
                 var stillNotPaidOut = _amortisationTables.CreditorsWithBalance;
@@ -110,13 +110,13 @@ namespace AmortisationSimulator.Core.Engine
             var total = result.Values.Sum();
             if (total != availableAmount)
             {
-                throw new NotImplementedException("Rounding error correction");
+                throw new NotImplementedException("Rounding error correction not implemented");
             }
 
             return result;
         }
 
-        private SimResult CreateSolution(SimResultType solutionType, string message = null)
+        private SimResult CreateSolution(SolutionType solutionType, string message = null)
         {
             var result = new SimResult(_variables.Strategy, solutionType)
             {
@@ -127,17 +127,17 @@ namespace AmortisationSimulator.Core.Engine
 
             Debug.WriteLine(result);
 
+            if (solutionType == SolutionType.SolutionFound)
+            {
+                ValidateSolution(result);
+            }
+
             return result;
         }
-    }
 
-    public class SimulationException : Exception
-    {
-        public readonly SimResultType SolutionType;
-
-        public SimulationException(SimResultType solutionType)
+        private void ValidateSolution(SimResult result)
         {
-            SolutionType = solutionType;
+            //todo: check closing balances, totals, negative amounts etc
         }
     }
 }
