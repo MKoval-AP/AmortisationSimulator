@@ -10,9 +10,9 @@ namespace AmortisationSimulator.Core.Input
         public decimal DcFeePercentage1 { get; set; }
         public decimal DcFeePercentage2 { get; set; }
         public Deduction[] Creditors { get; set; }
+        public decimal PdaFeePercentage { get; set; }
 
         //todo: first payment date
-        //todo: PDA fee
         //todo: DC VAT registered
         //todo: negotiation fee
         //todo: legal fees
@@ -22,7 +22,7 @@ namespace AmortisationSimulator.Core.Input
         public override string ToString()
         {
             return
-                $"[{Strategy}]: CA: {ContributionAmount}, DcFee-1: {DcFeePercentage1}, DcFee-2: {DcFeePercentage2}{Environment.NewLine}{string.Join(Environment.NewLine, Creditors.Select(c => c.ToString()))}";
+                $"[{Strategy}]: CA: {ContributionAmount}, DcFee-1: {DcFeePercentage1.ToString("p")}, DcFee-2: {DcFeePercentage2.ToString("p")}, PdaFee: {PdaFeePercentage.ToString("p")}{Environment.NewLine}{string.Join(Environment.NewLine, Creditors.Select(c => c.ToString()))}";
         }
     }
 }

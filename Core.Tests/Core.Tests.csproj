@@ -92,6 +92,7 @@
     <Compile Include="ExcelModels\AmortisationSummaryLine.cs" />
     <Compile Include="ExcelModels\Creditor.cs" />
     <Compile Include="ExcelModels\Input.cs" />
+    <Compile Include="Utils\ExcelReader.cs" />
     <Compile Include="Utils\DebugConsole.cs" />
     <Compile Include="Utils\SimResultComparer.cs" />
     <Compile Include="Models\SpecContextData.cs" />

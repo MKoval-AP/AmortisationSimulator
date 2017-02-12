@@ -112,9 +112,9 @@ namespace AmortisationSimulator.Core.Tests.Utils
                 return false;
             }
 
-            if (spec.OutstandingBalance != actual.OutstandingBalance)
+            if (spec.ClosingBalance != actual.ClosingBalance)
             {
-                Console.WriteLine($"AL[{spec.Period}] OutstandingBalance mismatch: expected {spec.OutstandingBalance}, actual: {actual.OutstandingBalance}");
+                Console.WriteLine($"AL[{spec.Period}] OutstandingBalance mismatch: expected {spec.ClosingBalance}, actual: {actual.ClosingBalance}");
                 return false;
             }
 
@@ -177,6 +177,12 @@ namespace AmortisationSimulator.Core.Tests.Utils
             if (spec.DcFee != actual.DcFee)
             {
                 Console.WriteLine($"AL[{spec.Period}]: DcFee mismatch: expected {spec.DcFee}, actual: {actual.DcFee}");
+                return false;
+            }
+
+            if (spec.PdaFee != actual.PdaFee)
+            {
+                Console.WriteLine($"AL[{spec.Period}]: DcFee mismatch: expected {spec.PdaFee}, actual: {actual.PdaFee}");
                 return false;
             }
 

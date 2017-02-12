@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace AmortisationSimulator.Core.Tests.ExcelModels
 {
@@ -10,15 +11,12 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
         public decimal TotalCreditorPayments { get; set; }
         public decimal NegotiationFee { get; set; }
         public decimal LegalFee { get; set; }
+        public decimal PdaFee { get; set; }
         public decimal DcFee { get; set; }
         public decimal DistributableToCreditors { get; set; }
-        public decimal CreditorSurplus { get; set; }
+        public decimal UnallocatedAmount { get; set; }
 
-        public override string ToString()
-        {
-            return
-                $"[ASL] {Period}: CA: {ContributionAmount}, TotalCreditorPayments: {TotalCreditorPayments}, NF: {NegotiationFee}, LF: {LegalFee}, DcFee: {DcFee}, DistributableToCreditors: {DistributableToCreditors}, CreditorSurplus: {CreditorSurplus},  Date: {Date}";
-        }
+        public Dictionary<string, CreditorPeriodSummary> CreditorSummaries = new Dictionary<string, CreditorPeriodSummary>();
 
         public Output.AmortisationSummaryLine ToSimLine()
         {
@@ -27,10 +25,18 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
                 Period = Period,
                 ContributionAmount = ContributionAmount,
                 DcFee = DcFee,
+                PdaFee = PdaFee,
                 DistributableToCreditors = DistributableToCreditors,
                 TotalCreditorPayments = TotalCreditorPayments,
-                UnallocatedAmount = CreditorSurplus
+                UnallocatedAmount = UnallocatedAmount
             };
         }
+    }
+
+    public class CreditorPeriodSummary
+    {
+        public decimal Installment { get; set; }
+        public decimal AccruedInterest { get; set; }
+        public decimal ClosingBalance { get; set; }
     }
 }

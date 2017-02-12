@@ -6,8 +6,9 @@
         public decimal ContributionAmount { get; }
         public decimal TotalCreditorPayments { get; set; }
         public decimal DcFee { get; set; }
-        public decimal DistributableToCreditors => ContributionAmount - DcFee;
-        public decimal UnallocatedAmount { get; set; }
+        public decimal PdaFee { get; set; }
+        public decimal DistributableToCreditors => ContributionAmount - DcFee - PdaFee;
+        public decimal UnallocatedAmount => ContributionAmount - TotalCreditorPayments - DcFee - PdaFee;
 
         public AmortisationSummaryLine(int period, decimal contributionAmount)
         {
@@ -28,6 +29,7 @@
                 Period = Period,
                 ContributionAmount = ContributionAmount,
                 DcFee = DcFee,
+                PdaFee = PdaFee,
                 DistributableToCreditors = DistributableToCreditors,
                 TotalCreditorPayments = TotalCreditorPayments,
                 UnallocatedAmount = UnallocatedAmount

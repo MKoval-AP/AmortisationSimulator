@@ -46,7 +46,7 @@ namespace AmortisationSimulator.Core.Engine
                 Period = Period,
                 Installment = AllocatedInstallment,
                 AccruedInterest = AccruedInterest,
-                OutstandingBalance = ClosingBalance
+                ClosingBalance = ClosingBalance
             };
         }
 

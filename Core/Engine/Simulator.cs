@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using AmortisationSimulator.Core.Input;
 using AmortisationSimulator.Core.Output;
@@ -10,19 +9,19 @@ namespace AmortisationSimulator.Core.Engine
     public class Simulator
     {
         public const int MaxPeriods = 360;
-        private SimVariables _variables;
+        private SimVariables Variables { get; set; }
         private AmortisationSummary _amortisationSummary;
         private AmortisationTables _amortisationTables;
 
         private int CurrentPeriod { get; set; }
         private AmortisationSummaryLine CurrentLine => _amortisationSummary[CurrentPeriod];
         private decimal CurrentContributionAmount => CurrentLine.ContributionAmount;
-        private decimal CurrentDcFeePercentage => CurrentPeriod <= 24 ? _variables.DcFeePercentage1 : _variables.DcFeePercentage2;
+        private decimal CurrentDcFeePercentage => CurrentPeriod <= 24 ? Variables.DcFeePercentage1 : Variables.DcFeePercentage2;
 
         private void InitFields(SimVariables variables)
         {
-            _variables = variables;
-            _amortisationTables = new AmortisationTables(_variables.Creditors);
+            Variables = variables;
+            _amortisationTables = new AmortisationTables(Variables.Creditors);
             _amortisationSummary = new AmortisationSummary();
         }
 
@@ -58,9 +57,12 @@ namespace AmortisationSimulator.Core.Engine
 
         private void AllocateCurrentPeriod()
         {
-            _amortisationSummary.Add(CurrentPeriod, new AmortisationSummaryLine(CurrentPeriod, _variables.ContributionAmount));
+            _amortisationSummary.Add(CurrentPeriod, new AmortisationSummaryLine(CurrentPeriod, Variables.ContributionAmount));
+            //todo: based on dates. especially if the first DC Fee payment was made before the first period date (migrated consumer, for example)
             CurrentLine.DcFee = CurrentContributionAmount * CurrentDcFeePercentage;
-            CurrentLine.UnallocatedAmount = AllocateCreditors(CurrentLine.DistributableToCreditors);
+            CurrentLine.PdaFee = CurrentContributionAmount * Variables.PdaFeePercentage;
+            //CurrentLine.UnallocatedAmount = 
+            AllocateCreditors(CurrentLine.DistributableToCreditors);
             CurrentLine.TotalCreditorPayments = _amortisationTables.TotalCreditorPayments(CurrentPeriod);
         }
 
@@ -118,14 +120,14 @@ namespace AmortisationSimulator.Core.Engine
 
         private SimResult CreateSolution(SolutionType solutionType, string message = null)
         {
-            var result = new SimResult(_variables.Strategy, solutionType)
+            var result = new SimResult(Variables.Strategy, solutionType)
             {
                 Message = message,
                 AmortisationSummary = _amortisationSummary.ToOutput(),
                 AmortisationTables = _amortisationTables.ToOutput()
             };
 
-            Debug.WriteLine(result);
+            //Debug.WriteLine(result);
 
             if (solutionType == SolutionType.SolutionFound)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using AmortisationSimulator.Core.Tests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,7 +9,7 @@ namespace AmortisationSimulator.Core.Tests.Models
 {
     public class SpecRun
     {
-        private static readonly DebugConsole DebugConsole = new DebugConsole();
+        private static readonly DebugConsole Console = new DebugConsole();
 
         private DateTime Started { get; }
         public List<SpecContextData> Specs { get; }
@@ -25,16 +26,29 @@ namespace AmortisationSimulator.Core.Tests.Models
             var sb = new StringBuilder();
             foreach (var spec in Specs)
             {
-                DebugConsole.WriteHeader($"{spec.CaseName}");
-                DebugConsole.Indent();
+                Console.WriteHeader($"{spec.CaseName}");
+                Console.Indent();
                 spec.ActualMatchesSpec = SimResultComparer.Compare(spec.Spec, spec.Actual);
-                DebugConsole.Unindent();
-                DebugConsole.WriteFooter($"{(spec.ActualMatchesSpec ? "passed" : "FAILED")}");
+                Console.Unindent();
+                Console.WriteFooter($"{(spec.ActualMatchesSpec ? "passed" : "FAILED")}");
+
+                if (spec.ActualMatchesSpec)
+                {
+                    Debug.WriteLine(spec.Actual);
+                }
+                else
+                {
+                    Debug.WriteLine("SPEC:");
+                    Debug.WriteLine(spec.Spec);
+                    Debug.WriteLine("ACTUAL:");
+                    Debug.WriteLine(spec.Actual);
+                }
+
                 SaveCsvFiles(directory, spec);
             }
 
             //comparison summary to test result
-            Console.WriteLine(sb);
+            System.Console.WriteLine(sb);
 
             Assert.IsTrue(Specs.TrueForAll(tc => tc.ActualMatchesSpec));
         }
