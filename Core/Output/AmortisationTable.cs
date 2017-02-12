@@ -10,7 +10,7 @@ namespace AmortisationSimulator.Core.Output
 
         public override string ToString()
         {
-            var sb = new StringBuilder($"C: {Creditor}").AppendLine();
+            var sb = new StringBuilder(Creditor.ToString()).AppendLine();
             foreach (var l in Lines)
             {
                 sb.AppendLine(l.ToString());

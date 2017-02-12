@@ -15,12 +15,7 @@ namespace AmortisationSimulator.Core.Engine
             Creditor = creditor;
         }
 
-        public bool IsPaidOut => Lines.Count > 0 && Lines.Last().Value.ClosingBalance == 0;
-
-        public Output.AmortisationTable ToOutput()
-        {
-            return new Output.AmortisationTable { Creditor = Creditor, Lines = Lines.Select(l => l.Value.ToOutput()).ToArray() };
-        }
+        public bool IsPaidOut => Creditor.OutstandingBalance == 0 || (Lines.Count > 0 && Lines.Last().Value.ClosingBalance == 0);
 
         public AmortisationLine GetPeriod(int period)
         {
@@ -56,6 +51,11 @@ namespace AmortisationSimulator.Core.Engine
             //1/12th of yearly interest
             var interest = PreviousBalance(period) * Creditor.InterestRatePercentage / 12.0m;
             return Math.Round(interest, 2, MidpointRounding.ToEven);
+        }
+
+        public Output.AmortisationTable ToOutput()
+        {
+            return new Output.AmortisationTable { Creditor = Creditor, Lines = Lines.Select(l => l.Value.ToOutput()).ToArray() };
         }
 
         public override string ToString()
