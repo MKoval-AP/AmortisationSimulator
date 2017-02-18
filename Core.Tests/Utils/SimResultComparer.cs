@@ -112,6 +112,12 @@ namespace AmortisationSimulator.Core.Tests.Utils
                 return false;
             }
 
+            if (spec.OldPdaFee != actual.OldPdaFee)
+            {
+                Console.WriteLine($"AL[{spec.Period}] OldPdaFee mismatch: expected {spec.OldPdaFee}, actual: {actual.OldPdaFee}");
+                return false;
+            }
+
             if (spec.ClosingBalance != actual.ClosingBalance)
             {
                 Console.WriteLine($"AL[{spec.Period}] OutstandingBalance mismatch: expected {spec.ClosingBalance}, actual: {actual.ClosingBalance}");

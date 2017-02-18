@@ -11,6 +11,9 @@ namespace AmortisationSimulator.Core.Input
         public decimal DcFeePercentage2 { get; set; }
         public Deduction[] Creditors { get; set; }
         public decimal PdaFeePercentage { get; set; }
+        public decimal VatPercentage { get; set; }
+        public bool IsDcVatRegistered { get; set; }
+        public bool IsOldPdaFee { get; set; }
 
         //todo: first payment date
         //todo: DC VAT registered

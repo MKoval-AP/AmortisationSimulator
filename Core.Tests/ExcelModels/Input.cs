@@ -16,6 +16,9 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
         public DateTime? EscalationDate { get; set; }
         public string Strategy { get; set; }
         public decimal PdaFeePercentage { get; set; }
+        public decimal VatPercentage { get; set; }
+        public bool IsDcVatRegistered { get; set; }
+        public bool IsOldPdaFee { get; set; }
 
         public override string ToString()
         {
@@ -31,7 +34,10 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
                 ContributionAmount = ContributionAmount,
                 DcFeePercentage1 = DcFeePercentage1,
                 DcFeePercentage2 = DcFeePercentage2,
-                PdaFeePercentage = PdaFeePercentage
+                PdaFeePercentage = PdaFeePercentage,
+                VatPercentage = VatPercentage,
+                IsDcVatRegistered = IsDcVatRegistered,
+                IsOldPdaFee = IsOldPdaFee
             };
         }
     }

@@ -7,10 +7,11 @@ namespace AmortisationSimulator.Core.Output
         public decimal AccruedInterest { get; set; }
         public decimal OpeningBalance { get; set; }
         public decimal ClosingBalance { get; set; }
+        public decimal OldPdaFee { get; set; }
 
         public override string ToString()
         {
-            return $"[{Period}]\tInst: {Installment}\tCB: {ClosingBalance}\tAccrInt: {AccruedInterest}";
+            return $"[{Period}]\tInst: {Installment}|{OldPdaFee}\tCB: {ClosingBalance}\tAccrInt: {AccruedInterest}";
         }
     }
 }

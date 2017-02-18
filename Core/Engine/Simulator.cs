@@ -60,7 +60,7 @@ namespace AmortisationSimulator.Core.Engine
             _amortisationSummary.Add(CurrentPeriod, new AmortisationSummaryLine(CurrentPeriod, Variables.ContributionAmount));
             //todo: based on dates. especially if the first DC Fee payment was made before the first period date (migrated consumer, for example)
             CurrentLine.DcFee = CurrentContributionAmount * CurrentDcFeePercentage;
-            CurrentLine.PdaFee = CurrentContributionAmount * Variables.PdaFeePercentage;
+            CurrentLine.PdaFee = Variables.IsOldPdaFee ? 0 : CurrentContributionAmount * Variables.PdaFeePercentage;
             //todo: careful when implementing escalation. escalation should go to surplus, not to DistributableToCreditors
             AllocateCreditors(CurrentLine.DistributableToCreditors);
             CurrentLine.TotalCreditorPayments = _amortisationTables.TotalCreditorPayments(CurrentPeriod);
@@ -118,7 +118,7 @@ namespace AmortisationSimulator.Core.Engine
             foreach (var ciCreditor in notPaidOutCreditors.Where(c => c.CustomInstallment > 0))
             {
                 totalAllocated += ciCreditor.CustomInstallment;
-                totalAllocated -= _amortisationTables[ciCreditor].AllocateToPeriod(CurrentPeriod, ciCreditor.CustomInstallment);
+                totalAllocated -= _amortisationTables[ciCreditor].AllocateToPeriod(CurrentPeriod, ciCreditor.CustomInstallment, Variables.IsOldPdaFee);
             }
 
             return distributableToCreditors - totalAllocated;
@@ -135,8 +135,7 @@ namespace AmortisationSimulator.Core.Engine
             var minBalance = creditorBalances.Min(cb => cb.Balance);
             var creditor = creditorBalances.First(cb => cb.Balance == minBalance).Creditor;
 
-            return _amortisationTables[creditor].LastPeriod().AllocateInstallment(remainder);
-            //todo: keep allocating
+            return _amortisationTables[creditor].AllocateToPeriod(CurrentPeriod, remainder, Variables.IsOldPdaFee);
         }
 
         private decimal AllocateSurplusProRata(decimal remainder)
@@ -161,7 +160,7 @@ namespace AmortisationSimulator.Core.Engine
             var proRataInstallments = GetProRataInstallments(amount, notPaidOutCreditors);
             foreach (var creditor in notPaidOutCreditors)
             {
-                remainder += _amortisationTables[creditor].AllocateToPeriod(CurrentPeriod, proRataInstallments[creditor]);
+                remainder += _amortisationTables[creditor].AllocateToPeriod(CurrentPeriod, proRataInstallments[creditor], Variables.IsOldPdaFee);
             }
             return remainder;
         }

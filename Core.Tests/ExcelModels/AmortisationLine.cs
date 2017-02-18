@@ -10,6 +10,13 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
         public decimal ServiceFees { get; set; }
         public decimal LinkedInsurance { get; set; }
         public decimal TotalPayment { get; set; }
+        public decimal OldPdaFee { get; set; }
+
+        /// <summary>
+        ///     includes old PDA fee
+        /// </summary>
+        public decimal InstallmentRaw { get; set; }
+
         public decimal AccruedInterest { get; set; }
         public decimal OpeningBalance { get; set; }
         public decimal ClosingBalance { get; set; }
@@ -20,9 +27,10 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
             {
                 Period = Period,
                 AccruedInterest = AccruedInterest,
-                Installment = Installment,
+                Installment = InstallmentRaw == 0 ? Installment : InstallmentRaw,
                 OpeningBalance = OpeningBalance,
-                ClosingBalance = ClosingBalance
+                ClosingBalance = ClosingBalance,
+                OldPdaFee = OldPdaFee
             };
         }
     }

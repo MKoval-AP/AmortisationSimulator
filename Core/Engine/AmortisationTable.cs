@@ -24,7 +24,7 @@ namespace AmortisationSimulator.Core.Engine
             return Lines.ContainsKey(period) ? Lines[period] : null;
         }
 
-        public decimal AllocateToPeriod(int period, decimal installment)
+        public decimal AllocateToPeriod(int period, decimal installment, bool isOldPdaFee)
         {
             if (!Lines.ContainsKey(period))
             {
@@ -33,7 +33,7 @@ namespace AmortisationSimulator.Core.Engine
             }
 
             var currentPeriod = Lines[period];
-            return currentPeriod.AllocateInstallment(installment);
+            return currentPeriod.AllocateInstallment(installment, isOldPdaFee);
         }
 
         public decimal CurrentBalance => (Lines.Count > 0 ? Lines.Last().Value.ClosingBalance : Creditor.OutstandingBalance);

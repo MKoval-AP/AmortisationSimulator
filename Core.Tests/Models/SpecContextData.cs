@@ -39,6 +39,8 @@ namespace AmortisationSimulator.Core.Tests.Models
                     ExcelAmortisationTables.Select(
                         de => new AmortisationTable { Creditor = de.Key.ToDeduction(), Lines = de.Value.Select(al => al.ToSimLine()).ToArray() }).ToArray()
             };
+
+            //todo: ensure Spec is valid solution (runs to zero balance, total payments = CA, no negatives etc)
         }
     }
 }
