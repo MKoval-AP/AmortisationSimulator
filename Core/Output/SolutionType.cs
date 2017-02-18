@@ -5,6 +5,7 @@ namespace AmortisationSimulator.Core.Output
         SolutionFound,
         ExceededMaxPeriods,
         SimulationException,
-        StuckInRemainderAllocation
+        StuckInRemainderAllocation,
+        TotalCustomInstallmentsMoreThanDistributableToCreditors
     }
 }

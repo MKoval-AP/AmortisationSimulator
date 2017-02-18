@@ -7,7 +7,7 @@ namespace AmortisationSimulator.Core.Engine
     {
         public readonly SolutionType SolutionType;
 
-        public SimulationException(SolutionType solutionType)
+        public SimulationException(SolutionType solutionType, string message = null) : base(message)
         {
             SolutionType = solutionType;
         }

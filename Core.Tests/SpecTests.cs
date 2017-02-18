@@ -14,7 +14,7 @@ namespace AmortisationSimulator.Core.Tests
             var specRun = new SpecRun();
             var sim = new Simulator();
 
-            foreach (var spec in Directory.GetFiles(@"..\..\Specs", "*.xlsx"))
+            foreach (var spec in Directory.GetFiles(@"..\..\..\Specs", "*.xlsx"))
             {
                 //skip Excel temp files
                 if (Path.GetFileNameWithoutExtension(spec).StartsWith("~"))

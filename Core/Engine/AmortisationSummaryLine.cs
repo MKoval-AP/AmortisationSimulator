@@ -1,4 +1,6 @@
-﻿namespace AmortisationSimulator.Core.Engine
+﻿using AmortisationSimulator.Core.Output;
+
+namespace AmortisationSimulator.Core.Engine
 {
     internal class AmortisationSummaryLine
     {
@@ -34,6 +36,16 @@
                 TotalCreditorPayments = TotalCreditorPayments,
                 UnallocatedAmount = UnallocatedAmount
             };
+        }
+
+        public void Validate()
+        {
+            //todo: other checks (not less than zero, etc)
+
+            if (UnallocatedAmount < 0)
+            {
+                throw new SimulationException(SolutionType.SimulationException, $"[Period {Period}]: invalid UnallocatedAmount {UnallocatedAmount}");
+            }
         }
     }
 }

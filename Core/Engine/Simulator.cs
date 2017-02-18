@@ -47,7 +47,7 @@ namespace AmortisationSimulator.Core.Engine
             }
             catch (SimulationException simEx)
             {
-                return CreateSolution(simEx.SolutionType);
+                return CreateSolution(simEx.SolutionType, simEx.Message);
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ namespace AmortisationSimulator.Core.Engine
             //todo: based on dates. especially if the first DC Fee payment was made before the first period date (migrated consumer, for example)
             CurrentLine.DcFee = CurrentContributionAmount * CurrentDcFeePercentage;
             CurrentLine.PdaFee = CurrentContributionAmount * Variables.PdaFeePercentage;
-            //CurrentLine.UnallocatedAmount =
+            //todo: careful when implementing escalation. escalation should go to surplus, not to DistributableToCreditors
             AllocateCreditors(CurrentLine.DistributableToCreditors);
             CurrentLine.TotalCreditorPayments = _amortisationTables.TotalCreditorPayments(CurrentPeriod);
         }
@@ -69,17 +69,59 @@ namespace AmortisationSimulator.Core.Engine
         private decimal AllocateCreditors(decimal distributableToCreditors)
         {
             var notPaidOutCreditors = _amortisationTables.CreditorsWithBalance;
+            var remainder = AllocateCustomInstallments(distributableToCreditors, notPaidOutCreditors);
+
             //allocate pro rata
             //honor outstanding balance
-            var remainder = AllocateProRata(distributableToCreditors, notPaidOutCreditors);
+            remainder = AllocateProRata(remainder, notPaidOutCreditors);
 
             //allocate surplus if any & still possible
-            if (remainder > 0)
+            var epoch = 0;
+            while (remainder > 0 && !_amortisationTables.AllCreditorsPaidOut)
             {
-                remainder = Variables.Strategy == Strategy.ProRata ? AllocateSurplusProRata(remainder) : AllocateSurplusSnowball(remainder);
+                if (epoch == 5)
+                {
+                    throw new SimulationException(SolutionType.StuckInRemainderAllocation);
+                }
+
+                switch (Variables.Strategy)
+                {
+                    case Strategy.ProRata:
+                        remainder = AllocateSurplusProRata(remainder);
+                        break;
+                    case Strategy.Snowball:
+                        remainder = AllocateSurplusSnowball(remainder);
+                        break;
+                    default:
+                        throw new NotImplementedException($"Strategy {Variables.Strategy} is not implemented");
+                }
+                epoch++;
+            }
+            return remainder;
+        }
+
+        private decimal AllocateCustomInstallments(decimal distributableToCreditors, Deduction[] notPaidOutCreditors)
+        {
+            if (!notPaidOutCreditors.Any(c => c.CustomInstallment > 0))
+            {
+                return distributableToCreditors;
             }
 
-            return remainder;
+            //todo: skip custom installments if any NF/LF not paid yet
+            var ciSum = notPaidOutCreditors.Sum(c => c.CustomInstallment);
+            if (ciSum > distributableToCreditors)
+            {
+                throw new SimulationException(SolutionType.TotalCustomInstallmentsMoreThanDistributableToCreditors);
+            }
+
+            var totalAllocated = 0m;
+            foreach (var ciCreditor in notPaidOutCreditors.Where(c => c.CustomInstallment > 0))
+            {
+                totalAllocated += ciCreditor.CustomInstallment;
+                totalAllocated -= _amortisationTables[ciCreditor].AllocateToPeriod(CurrentPeriod, ciCreditor.CustomInstallment);
+            }
+
+            return distributableToCreditors - totalAllocated;
         }
 
         private decimal AllocateSurplusSnowball(decimal remainder)
@@ -99,23 +141,18 @@ namespace AmortisationSimulator.Core.Engine
 
         private decimal AllocateSurplusProRata(decimal remainder)
         {
-            var epoch = 0;
-            while (remainder > 0 && !_amortisationTables.AllCreditorsPaidOut)
-            {
-                if (epoch == 5)
-                {
-                    throw new SimulationException(SolutionType.StuckInRemainderAllocation);
-                }
-
-                var stillNotPaidOut = _amortisationTables.CreditorsWithBalance;
-                remainder = AllocateProRata(remainder, stillNotPaidOut);
-                epoch++;
-            }
-            return remainder;
+            return AllocateProRata(remainder, _amortisationTables.CreditorsWithBalance);
         }
 
         private decimal AllocateProRata(decimal distributableToCreditors, Deduction[] notPaidOutCreditors)
         {
+            //exclude custom installment creditors from allocation (they've got custom installment already, so giving them pro rata is not fair)
+            notPaidOutCreditors = notPaidOutCreditors.Where(c => c.CustomInstallment == 0).ToArray();
+            if (!notPaidOutCreditors.Any())
+            {
+                return distributableToCreditors;
+            }
+
             decimal remainder = 0;
             //calculate pro rata installments
             var proRataInstallments = GetProRataInstallments(distributableToCreditors, notPaidOutCreditors);
@@ -163,7 +200,10 @@ namespace AmortisationSimulator.Core.Engine
 
         private void ValidateSolution(SimResult result)
         {
-            //todo: check closing balances, totals, negative amounts etc
+            foreach (var summaryLine in _amortisationSummary.Values)
+            {
+                summaryLine.Validate();
+            }
         }
     }
 }

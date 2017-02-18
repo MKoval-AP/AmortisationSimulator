@@ -9,6 +9,8 @@ namespace AmortisationSimulator.Core.Input
         public decimal InterestRatePercentage { get; set; }
         public decimal OriginalInstallment { get; set; }
         public decimal OutstandingBalance { get; set; }
+        public decimal CustomInstallment { get; set; }
+
         //todo: creditor type
         //todo: service fees
         //todo: linked insurance
@@ -23,7 +25,8 @@ namespace AmortisationSimulator.Core.Input
 
         public override string ToString()
         {
-            return $"({CreditorName}) {InterestRatePercentage.ToString("p")}\tOutstanding: {OutstandingBalance}\tOrigInst: {OriginalInstallment}";
+            return
+                $"({CreditorName}) {InterestRatePercentage.ToString("p")}\tOutstanding: {OutstandingBalance}\tOrigInst: {OriginalInstallment}\tCustInst: {CustomInstallment}";
         }
     }
 }

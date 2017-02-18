@@ -35,7 +35,8 @@ namespace AmortisationSimulator.Core.Tests.ExcelModels
                     CreditorName = CreditorName,
                     InterestRatePercentage = InterestRate,
                     OriginalInstallment = OriginalInstallment,
-                    OutstandingBalance = OutstandingBalance
+                    OutstandingBalance = OutstandingBalance,
+                    CustomInstallment = CustomInstallment
                 };
             }
             return _deduction;

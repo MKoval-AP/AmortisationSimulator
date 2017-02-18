@@ -25,7 +25,7 @@ namespace AmortisationSimulator.Core.Tests.Utils
             if (!matches)
             {
                 Console.WriteLine(actual.Message);
-                Console.WriteLine($"Simulation result mismatch: expected: {spec.Result}, actual: {actual.Result}");
+                Console.WriteLine($"Simulation result mismatch: expected: {spec.Result}, actual: {actual.Result} ({actual.Message})");
                 return false;
             }
 
@@ -167,12 +167,12 @@ namespace AmortisationSimulator.Core.Tests.Utils
                 return false;
             }
 
-            if (spec.DistributableToCreditors != actual.DistributableToCreditors)
-            {
-                Console.WriteLine(
-                    $"ASL[{spec.Period}]: DistributableToCreditors mismatch: expected {spec.DistributableToCreditors}, actual: {actual.DistributableToCreditors}");
-                return false;
-            }
+            //if (spec.DistributableToCreditors != actual.DistributableToCreditors)
+            //{
+            //    Console.WriteLine(
+            //        $"ASL[{spec.Period}]: DistributableToCreditors mismatch: expected {spec.DistributableToCreditors}, actual: {actual.DistributableToCreditors}");
+            //    return false;
+            //}
 
             if (spec.DcFee != actual.DcFee)
             {
