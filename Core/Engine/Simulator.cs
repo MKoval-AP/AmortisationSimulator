@@ -141,21 +141,24 @@ namespace AmortisationSimulator.Core.Engine
 
         private decimal AllocateSurplusProRata(decimal remainder)
         {
-            return AllocateProRata(remainder, _amortisationTables.CreditorsWithBalance);
+            return AllocateProRata(remainder, _amortisationTables.CreditorsWithBalance, true);
         }
 
-        private decimal AllocateProRata(decimal distributableToCreditors, Deduction[] notPaidOutCreditors)
+        private decimal AllocateProRata(decimal amount, Deduction[] notPaidOutCreditors, bool isSurplus = false)
         {
-            //exclude custom installment creditors from allocation (they've got custom installment already, so giving them pro rata is not fair)
-            notPaidOutCreditors = notPaidOutCreditors.Where(c => c.CustomInstallment == 0).ToArray();
-            if (!notPaidOutCreditors.Any())
+            if (!isSurplus)
             {
-                return distributableToCreditors;
+                //exclude custom installment creditors from allocation (they've got custom installment already, so giving them pro rata is not fair)
+                notPaidOutCreditors = notPaidOutCreditors.Where(c => c.CustomInstallment == 0).ToArray();
+                if (!notPaidOutCreditors.Any())
+                {
+                    return amount;
+                }
             }
 
             decimal remainder = 0;
             //calculate pro rata installments
-            var proRataInstallments = GetProRataInstallments(distributableToCreditors, notPaidOutCreditors);
+            var proRataInstallments = GetProRataInstallments(amount, notPaidOutCreditors);
             foreach (var creditor in notPaidOutCreditors)
             {
                 remainder += _amortisationTables[creditor].AllocateToPeriod(CurrentPeriod, proRataInstallments[creditor]);

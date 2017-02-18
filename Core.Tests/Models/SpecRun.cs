@@ -39,6 +39,7 @@ namespace AmortisationSimulator.Core.Tests.Models
                 }
                 else
                 {
+                    Debug.WriteLine(spec.CaseName);
                     Debug.WriteLine("SPEC:");
                     Debug.WriteLine(spec.Spec);
                     Debug.WriteLine("ACTUAL:");
